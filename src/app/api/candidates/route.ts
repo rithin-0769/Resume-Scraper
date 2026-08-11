@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/db";
+import { ensureDatabase, getDb } from "@/db";
 import { candidates } from "@/db/schema";
 import { parseResume } from "@/lib/parser";
-import { desc, ilike, or, sql } from "drizzle-orm";
+import { desc, sql } from "drizzle-orm";
 
 export const dynamic = "force-dynamic";
 
@@ -15,6 +15,8 @@ export async function GET(req: NextRequest) {
   const company = searchParams.get("company")?.trim() || "";
 
   try {
+    await ensureDatabase();
+    const db = getDb();
     let rows = await db.select().from(candidates).orderBy(desc(candidates.createdAt));
 
     // In-memory filtering for flexibility (skills is JSONB, do simple filter)
@@ -47,12 +49,15 @@ export async function GET(req: NextRequest) {
     return NextResponse.json(rows);
   } catch (e) {
     console.error(e);
-    return NextResponse.json({ error: "Failed to fetch candidates" }, { status: 500 });
+    const message = e instanceof Error ? e.message : "Failed to fetch candidates";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }
 
 export async function POST(req: NextRequest) {
   try {
+    await ensureDatabase();
+    const db = getDb();
     const body = await req.json();
     const { rawText, fileName } = body;
     if (!rawText || typeof rawText !== "string" || rawText.trim().length < 20) {
@@ -97,15 +102,19 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(inserted, { status: 201 });
   } catch (e) {
     console.error(e);
-    return NextResponse.json({ error: "Failed to parse resume" }, { status: 500 });
+    const message = e instanceof Error ? e.message : "Failed to parse resume";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }
 
 export async function DELETE(req: NextRequest) {
   try {
+    await ensureDatabase();
+    const db = getDb();
     await db.delete(candidates);
     return NextResponse.json({ ok: true });
   } catch (e) {
-    return NextResponse.json({ error: "Failed to clear" }, { status: 500 });
+    const message = e instanceof Error ? e.message : "Failed to clear";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }
