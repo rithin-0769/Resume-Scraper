@@ -287,6 +287,11 @@ export default function Page() {
       data-theme={theme}
       className={`min-h-screen transition-colors duration-300 ${theme === "dark" ? "text-slate-100" : "text-slate-900"}`}
     >
+      <div className="fixed bottom-4 right-4 z-40 pointer-events-none select-none">
+        <div className="rounded-full border border-slate-200 bg-white/85 px-3 py-1.5 text-[11px] font-bold tracking-[0.18em] text-slate-500 shadow-lg backdrop-blur-sm">
+          MADE BY RITHIN RAVOORI
+        </div>
+      </div>
       {/* Header */}
       <header className="sticky top-0 z-30 backdrop-blur-xl bg-white/80 border-b border-slate-200">
         <div className="mx-auto max-w-[1440px] px-4 sm:px-6 lg:px-8 h-[64px] flex items-center justify-between">
