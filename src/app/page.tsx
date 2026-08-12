@@ -27,6 +27,7 @@ type Candidate = {
 };
 
 export default function Page() {
+  const [theme, setTheme] = useState<"light" | "dark">("light");
   const [candidates, setCandidates] = useState<Candidate[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -45,6 +46,16 @@ export default function Page() {
   const [previewParsed, setPreviewParsed] = useState<any>(null);
   const [viewMode, setViewMode] = useState<"grid"|"list">("grid");
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    const storedTheme = window.localStorage.getItem("talentparse-theme");
+    const preferredDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+    setTheme(storedTheme === "dark" || (!storedTheme && preferredDark) ? "dark" : "light");
+  }, []);
+
+  useEffect(() => {
+    window.localStorage.setItem("talentparse-theme", theme);
+  }, [theme]);
 
   const fetchCandidates = async () => {
     setLoading(true);
@@ -260,7 +271,10 @@ export default function Page() {
   };
 
   return (
-    <div className="min-h-screen">
+    <div
+      data-theme={theme}
+      className={`min-h-screen transition-colors duration-300 ${theme === "dark" ? "text-slate-100" : "text-slate-900"}`}
+    >
       {/* Header */}
       <header className="sticky top-0 z-30 backdrop-blur-xl bg-white/80 border-b border-slate-200">
         <div className="mx-auto max-w-[1440px] px-4 sm:px-6 lg:px-8 h-[64px] flex items-center justify-between">
@@ -282,6 +296,12 @@ export default function Page() {
             </nav>
           </div>
           <div className="flex items-center gap-2">
+            <button
+              onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-slate-200 bg-white text-sm font-semibold hover:bg-slate-50"
+            >
+              {theme === "dark" ? "Light Mode" : "Dark Mode"}
+            </button>
             <button onClick={exportCSV} className="hidden sm:inline-flex items-center gap-2 px-4 py-2 rounded-full border border-slate-200 bg-white text-sm font-semibold hover:bg-slate-50">⤓ CSV</button>
             <button onClick={exportJSON} className="hidden sm:inline-flex items-center gap-2 px-4 py-2 rounded-full bg-slate-900 text-white text-sm font-semibold hover:bg-black">⤓ JSON</button>
             <button onClick={()=> fileInputRef.current?.click()} className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-gradient-to-r from-violet-600 to-indigo-600 text-white text-sm font-bold shadow-lg shadow-violet-200 hover:shadow-xl transition">＋ Upload</button>
@@ -384,7 +404,7 @@ export default function Page() {
           <div className="px-6 sm:px-8 py-6 border-b border-slate-100 flex flex-wrap items-center justify-between gap-3">
             <div>
               <h2 className="text-lg font-extrabold text-slate-900 flex items-center gap-2">⬆ Upload Resumes <span className="text-xs font-bold px-2 py-1 rounded-full bg-violet-600 text-white">AI PARSER</span></h2>
-              <p className="text-sm text-slate-500">PDF • Drag & drop • Multiple files • &lt;10MB each • OCR fallback for scanned PDFs</p>
+              <p className="text-sm text-slate-500">PDF • Drag & drop • Multiple files • &lt;10MB each • Up to 200k extracted chars • OCR fallback for scanned PDFs</p>
             </div>
             <div className="flex items-center gap-2">
               <button onClick={()=> setShowUpload(!showUpload)} className="px-4 py-2 rounded-full border border-slate-200 text-sm font-semibold hover:bg-slate-50">{showUpload ? "Hide" : "Show"} Upload</button>

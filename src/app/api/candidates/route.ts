@@ -5,6 +5,7 @@ import { parseResume } from "@/lib/parser";
 import { desc, sql } from "drizzle-orm";
 
 export const dynamic = "force-dynamic";
+const MAX_RESUME_TEXT_LENGTH = 200_000;
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
@@ -63,8 +64,8 @@ export async function POST(req: NextRequest) {
     if (!rawText || typeof rawText !== "string" || rawText.trim().length < 20) {
       return NextResponse.json({ error: "rawText is required (min 20 chars)" }, { status: 400 });
     }
-    if (rawText.length > 50000) {
-      return NextResponse.json({ error: "Resume text too large (max 50k chars)" }, { status: 400 });
+    if (rawText.length > MAX_RESUME_TEXT_LENGTH) {
+      return NextResponse.json({ error: "Resume text too large (max 200k chars)" }, { status: 400 });
     }
 
     const parsed = parseResume(rawText, fileName);
