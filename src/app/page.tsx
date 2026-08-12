@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { getInternshipRecommendations } from "@/lib/internshipRecommendations";
 import { sampleResumes } from "@/lib/sampleResumes";
 
 type Candidate = {
@@ -71,14 +72,20 @@ export default function Page() {
   const showToast = (msg: string) => { setToast(msg); setTimeout(()=>setToast(null), 2500); };
 
   const extractTextFromPdf = async (file: File): Promise<string> => {
-    // dynamic import pdfjs
     const pdfjs: any = await import("pdfjs-dist");
-    // set worker
     if (pdfjs.GlobalWorkerOptions && !pdfjs.GlobalWorkerOptions.workerSrc) {
-      pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@4.4.168/build/pdf.worker.min.mjs`;
+      pdfjs.GlobalWorkerOptions.workerSrc = new URL(
+        "pdfjs-dist/build/pdf.worker.mjs",
+        import.meta.url
+      ).toString();
     }
     const arrayBuffer = await file.arrayBuffer();
-    const pdf = await pdfjs.getDocument({ data: arrayBuffer }).promise;
+    let pdf;
+    try {
+      pdf = await pdfjs.getDocument({ data: arrayBuffer }).promise;
+    } catch {
+      pdf = await pdfjs.getDocument({ data: arrayBuffer, disableWorker: true }).promise;
+    }
     let fullText = "";
     for (let i=1;i<=pdf.numPages;i++) {
       const page = await pdf.getPage(i);
@@ -269,6 +276,11 @@ export default function Page() {
     const a = document.createElement("a"); a.href=url; a.download=`candidates_${Date.now()}.json`; a.click(); URL.revokeObjectURL(url);
     showToast("JSON exported");
   };
+
+  const selectedRecommendations = useMemo(() => {
+    if (!selected) return [];
+    return getInternshipRecommendations(selected);
+  }, [selected]);
 
   return (
     <div
@@ -685,6 +697,56 @@ export default function Page() {
                     <span className="px-3 py-1 rounded-full bg-white/15 border border-white/20">{selected.totalExperience} yrs experience</span>
                     <span className="px-3 py-1 rounded-full bg-white/15 border border-white/20">{selected.skills.length} skills</span>
                     <span className="px-3 py-1 rounded-full bg-white/15 border border-white/20">{selected.languages.length} languages</span>
+                  </div>
+                </div>
+
+                <div className="rounded-2xl bg-white border border-slate-200 p-5">
+                  <div className="flex items-center justify-between gap-3">
+                    <div>
+                      <h4 className="font-extrabold text-slate-900">Recommended Internships</h4>
+                      <p className="mt-1 text-sm text-slate-500">Best-fit roles based on skills, projects, education, and experience signals.</p>
+                    </div>
+                    <span className="px-2.5 py-1 rounded-full bg-violet-50 text-violet-700 border border-violet-200 text-xs font-bold">
+                      {selectedRecommendations.length} matches
+                    </span>
+                  </div>
+                  <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {selectedRecommendations.map((recommendation) => (
+                      <div key={recommendation.title} className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                        <div className="flex items-start justify-between gap-3">
+                          <div>
+                            <div className="font-bold text-slate-900">{recommendation.title}</div>
+                            <div className="text-xs text-slate-500 mt-1">{recommendation.reason}</div>
+                          </div>
+                          <div className="text-right">
+                            <div className="text-lg font-black text-slate-900">{recommendation.matchScore}%</div>
+                            <div className="text-[11px] font-bold tracking-widest text-violet-700">{recommendation.fitLevel} FIT</div>
+                          </div>
+                        </div>
+                        {recommendation.skillsToHighlight.length > 0 && (
+                          <div className="mt-3">
+                            <div className="text-[11px] font-bold tracking-widest text-slate-500">HIGHLIGHT THESE</div>
+                            <div className="mt-2 flex flex-wrap gap-2">
+                              {recommendation.skillsToHighlight.map((skill) => (
+                                <span key={skill} className="px-2.5 py-1 rounded-full bg-white border border-slate-200 text-xs font-semibold text-slate-700">
+                                  {skill}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                        <div className="mt-3">
+                          <div className="text-[11px] font-bold tracking-widest text-slate-500">SUGGESTED SEARCHES</div>
+                          <div className="mt-2 flex flex-wrap gap-2">
+                            {recommendation.suggestedSearches.map((searchTerm) => (
+                              <span key={searchTerm} className="px-2.5 py-1 rounded-full bg-violet-50 border border-violet-200 text-xs font-semibold text-violet-700">
+                                {searchTerm}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </div>
 
