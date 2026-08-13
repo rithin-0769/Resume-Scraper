@@ -288,7 +288,12 @@ export default function Page() {
       className={`min-h-screen transition-colors duration-300 ${theme === "dark" ? "text-slate-100" : "text-slate-900"}`}
     >
       <div className="fixed bottom-4 right-4 z-40 pointer-events-none select-none">
-        <div className="rounded-full border border-slate-200 bg-white/85 px-3 py-1.5 text-[11px] font-bold tracking-[0.18em] text-slate-500 shadow-lg backdrop-blur-sm">
+        <div className={`flex items-center gap-2 rounded-full border px-3.5 py-1.5 text-[11px] font-extrabold tracking-[0.18em] shadow-lg backdrop-blur-md transition-all duration-300 ${
+          theme === "dark"
+            ? "border-slate-800 bg-slate-900/90 text-slate-300 shadow-slate-950/80"
+            : "border-slate-200 bg-white/90 text-slate-700 shadow-violet-100"
+        }`}>
+          <span className="w-1.5 h-1.5 rounded-full bg-violet-500 animate-pulse"></span>
           MADE BY RITHIN RAVOORI
         </div>
       </div>

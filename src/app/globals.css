@@ -19,6 +19,8 @@ body:has([data-theme="dark"]) {
 
 [data-theme="dark"] .bg-white,
 [data-theme="dark"] .bg-white\/80,
+[data-theme="dark"] .bg-white\/85,
+[data-theme="dark"] .bg-white\/90,
 [data-theme="dark"] .bg-slate-50,
 [data-theme="dark"] .bg-slate-50\/50,
 [data-theme="dark"] .bg-\[\#f8f9fc\] {
