@@ -85,7 +85,7 @@ export function getInternshipRecommendations(candidate: CandidateProfile): Inter
   );
   const degreeText = candidate.education.map((entry) => `${entry.degree} ${entry.college}`).join(" ").toLowerCase();
 
-  const recommendations = INTERNSHIP_RULES.map((rule) => {
+  const recommendations = INTERNSHIP_RULES.map((rule): InternshipRecommendation => {
     const matchedSkills = rule.skillKeywords.filter((keyword) =>
       normalizedSkills.some((skill) => skill.includes(keyword.toLowerCase())),
     );
@@ -105,7 +105,7 @@ export function getInternshipRecommendations(candidate: CandidateProfile): Inter
     return {
       title: rule.title,
       matchScore: Math.min(98, score),
-      fitLevel: score >= 55 ? "High" : "Medium",
+      fitLevel: score >= 55 ? ("High" as const) : ("Medium" as const),
       reason:
         matchedSkills.length > 0
           ? `Strong overlap with ${matchedSkills.slice(0, 4).join(", ")} and related project signals.`
